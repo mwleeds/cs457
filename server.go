@@ -11,20 +11,24 @@ import (
 const db_filename string = "bike_shop.db"
 
 func main() {
+    // create a sqlite db with fake data
     create_db()
+    // create an http server with handlers for each function
     http.HandleFunc("/", mainHandler)
     http.HandleFunc("/get_table/", getTableHandler)
     http.HandleFunc("/find_expensive_bikes/", findExpensiveBikesHandler)
     http.HandleFunc("/bikes_by_state/", bikesByStateHandler)
     http.HandleFunc("/insert_bike/", insertBikeHandler)
+    http.HandleFunc("/exec_select/", execSelectHandler)
     http.ListenAndServe(":8080", nil)
 }
 
 func mainHandler(w http.ResponseWriter, r *http.Request) {
+    // HTML for the home page with a form for each function
     fmt.Fprintf(w, `<h1>CS 457 HW 5 by Matthew Leeds</h1>
                     <br>
                     <ol><li><form action="/get_table/" method="POST">
-                    Select a table to view: 
+                    SELECT * FROM
                     <select name="table">
                       <option value="Employee">Employee</option>
                       <option value="Teaches">Teaches</option>
@@ -33,7 +37,7 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
                       <option value="Customer">Customer</option>
                       <option value="Customer_Phone_Number">Customer_Phone_Number</option>
                     </select>
-                    &nbsp;&nbsp;<input type="submit" value="Go">
+                    &nbsp;&nbsp;<input type="submit" value="Execute">
                     </form></li>
                     <br>
                     <li><form action="/find_expensive_bikes/" method="POST">
@@ -61,9 +65,17 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
                     <input type="text" name="bike_purchaser_email">,&nbsp;&nbsp;(Enter the bike's purchaser email address foreign key.)<br>
                     )<br>
                     &nbsp;&nbsp;<input type="submit" value="Execute">
-                    </form></ol>`)
+                    </form></li>
+                    <br>
+                    <li><form action="/exec_select/" method="POST">
+                    SELECT <input type="text" name="select_query">
+                    &nbsp;&nbsp;<input type="submit" value="Execute">
+                    </form></li>
+                    </ol>`)
 }
 
+// execute a SELECT * on the specified table,
+// and format the results as an HTML table
 func getTableHandler(w http.ResponseWriter, r *http.Request) {
     table_name := r.FormValue("table")
 
@@ -186,6 +198,8 @@ func getTableHandler(w http.ResponseWriter, r *http.Request) {
     fmt.Fprint(w, html)
 }
 
+// execute a query to find bikes with values above a specified threshold,
+// and format the results as an HTML table
 func findExpensiveBikesHandler(w http.ResponseWriter, r *http.Request) {
     bike_value_floor := r.FormValue("bike_value_floor")
 
@@ -232,6 +246,8 @@ func findExpensiveBikesHandler(w http.ResponseWriter, r *http.Request) {
     fmt.Fprint(w, html)
 }
 
+// execute a query to find bikes from the specified state,
+// and format the results as an HTML table
 func bikesByStateHandler(w http.ResponseWriter, r *http.Request) {
     bike_purchaser_state := r.FormValue("bike_purchaser_state")
 
@@ -277,6 +293,8 @@ func bikesByStateHandler(w http.ResponseWriter, r *http.Request) {
     fmt.Fprint(w, html)
 }
 
+// execute an INSERT for the Bike table using the specified values,
+// and format the results as an HTML table
 func insertBikeHandler(w http.ResponseWriter, r *http.Request) {
     bike_id := r.FormValue("bike_id")
     bike_status := r.FormValue("bike_status")
@@ -304,6 +322,69 @@ func insertBikeHandler(w http.ResponseWriter, r *http.Request) {
                     table, th, td { padding: 5px; border: 1px solid black; }</style>
              <h1>CS 457 HW 5 by Matthew Leeds</h1>
              <h3>INSERT query successful!</h3>
+             <br>
+             <a href="/">Back</a>`
+
+    fmt.Fprint(w, html)
+}
+
+// execute a SELECT as specified,
+// and format the results as an HTML table
+func execSelectHandler(w http.ResponseWriter, r *http.Request) {
+    select_query := r.FormValue("select_query")
+
+	db, err := sql.Open("sqlite3", db_filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+    // of course if this were production code we would sanitize the input
+	sqlStmt := fmt.Sprintf("SELECT " + select_query + ";")
+
+	rows, err := db.Query(sqlStmt)
+	if err != nil {
+		log.Printf("%q: %s\n", err, sqlStmt)
+		return
+	}
+
+    html := `<style>table { border-collapse: collapse; border-spacing: 0px; } 
+                    table, th, td { padding: 5px; border: 1px solid black; }</style>
+             <h1>CS 457 HW 5 by Matthew Leeds</h1>
+             <h3>SELECT query results:</h3>
+             <table><tr>`
+
+    columns, err := rows.Columns()
+	if err != nil {
+		log.Printf("%q: %s\n", err, sqlStmt)
+		return
+	}
+
+    for _, column := range columns {
+        html += fmt.Sprintf("<th>%s</th>", column)
+    }
+    html += "</tr>"
+
+    // move the result into a string array
+    var result [][]string
+    pointers := make([]interface{}, len(columns))
+    container := make([]string, len(columns))
+    for i, _ := range pointers {
+        pointers[i] = &container[i]
+    }
+    for rows.Next() {
+        rows.Scan(pointers...)
+        result = append(result, container)
+    }
+    for i := range result {
+        html += "<tr>"
+        for j := range columns {
+            html += fmt.Sprintf("<td>%s</td>", result[i][j])
+        }
+        html += "</tr>"
+    }
+
+    html += `</table>
              <br>
              <a href="/">Back</a>`
 
