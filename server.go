@@ -367,15 +367,16 @@ func execSelectHandler(w http.ResponseWriter, r *http.Request) {
 
     // move the result into a string array
     var result [][]string
-    pointers := make([]interface{}, len(columns))
-    container := make([]string, len(columns))
-    for i, _ := range pointers {
-        pointers[i] = &container[i]
-    }
     for rows.Next() {
+        pointers := make([]interface{}, len(columns))
+        container := make([]string, len(columns))
+        for i, _ := range pointers {
+            pointers[i] = &container[i]
+        }
         rows.Scan(pointers...)
         result = append(result, container)
     }
+
     for i := range result {
         html += "<tr>"
         for j := range columns {
