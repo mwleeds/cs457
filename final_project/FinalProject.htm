@@ -1,0 +1,204 @@
+<html xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+<meta NAME="GENERATOR" CONTENT="Microsoft FrontPage 12.0">
+<meta NAME="GENERATOR" CONTENT="Microsoft FrontPage 4.0">
+<title>CS457 HW4</title>
+<style>
+<!--
+div.Section1
+	{page:Section1;}
+span.GramE
+	{}
+span.SpellE
+	{}
+.style2 {
+				font-size: large;
+}
+.style3 {
+				font-size: large;
+				font-weight: bold;
+}
+.style5 {
+				font-size: medium;
+}
+.style1 {
+	background-color: #FFFFFF;
+}
+.style8 {
+	background-color: #FFFFFF;
+	font-size: medium;
+}
+.style9 {
+	color: black;
+	font-size: medium;
+}
+.style10 {
+	font-size: medium;
+	font-weight: bold;
+}
+.style15 {
+	background-color: #FFFF00;
+}
+.style16 {
+	font-size: medium;
+	margin-left: 40px;
+}
+.style17 {
+	margin-left: 40px;
+}
+-->
+</style>
+</head>
+
+<body>
+<p align="center"><span class="style3"><b>
+<span style="color:black">CS 457/557 Spring 2016</span></b></span><span style="color:black" class="style3"><br>
+</span><span style="font-size:18.0pt;color:black">
+<span class="style2">Final Exam Project <br>
+Implement subset of CQL Language for Cassandra - a 
+Column Store NoSQL DB</span></span></p>
+<p class="style5"><strong>As questions about this assignment arise, I will be 
+posting clarifications.<br>
+1) No * will be used when a join is specified.&nbsp; It can be used if there is 
+no join (only one table).</strong></p>
+<p><span style="color:black" class="style10"><b>Mode</b>:<span class="apple-converted-space">&nbsp;</span>&nbsp;<strong>Individual</strong><br>
+<b>Due Date</b></span><span style="color:black" class="style3"><span style="color:black" class="style10">:&nbsp; <strong>
+May 2 
+- email to vrbsky@cs.ua.edu by 7:00 am.&nbsp; No late submission will be accepted.</strong></span></span></p>
+<p class="style8">For this assignment you are to write a program to implement a 
+s<span class="style1">ubset of the operations available in the query language 
+CassandraQL (CQL).&nbsp; You will be</span> required to process and execute CQL 
+queries on preexisting files, each of which corresponds to a table in a column 
+store database.&nbsp; This means you will have to parse the query to identify 
+which operations it is requesting, perform the operations on the specified 
+table(s) and display the results.&nbsp; You must write the code to implement 
+operations similar to a Select, Project and Join. You cannot run these queries 
+using a database management system, instead you are implementing some of the 
+software that would be used by CQL for a Column Store DBMS.&nbsp;<o:p></o:p></p>
+<p class="style8">You can use any language you desire since you will perform 
+your demo on your laptop.</p>
+<p class="style9"><strong>Task 1: </strong>&nbsp;Download the sample data files and 
+create whatever 
+metadata you need for your column store database.</p>
+<p><span style="color:black" class="style5"><strong>Database:</strong>&nbsp; 
+The database for your queries has 3 tables, named A, B, and C.&nbsp; Table A has 
+2 columns, named A1, A2, where A1 is the key and A2 is <span class="style1">a 
+column</span></span><span style="font-size:13.5pt;color:black"><span class="style5"><span style="background: white">.&nbsp; 
+</span></span>
+</span><span style="color:black" class="style5">Table </span>
+<span style="font-size:13.5pt;color:black"><span class="style5">
+<span style="background: white">B has 3 columns, named B1, B2, B3 where B1 is the key, and columns B2, B3 
+are a column family. </span></span>
+</span><span style="color:black" class="style5">Table </span>
+<span style="font-size:13.5pt;color:black"><span class="style5">
+<span style="background: white">C has 4 columns named C1, C2, 
+C3, C4, where C1 is the key and columns C2, C3, C4 are a column family.&nbsp; Assume all data is integer.&nbsp; You should create whatever 
+metadata you need to process a query.</span></span><o:p>&nbsp; </o:p>
+</span></p>
+<p>
+<o:p></o:p>
+<span style="color:black" class="style5">SAMPLE DATA FILES:&nbsp;&nbsp;&nbsp;&nbsp;<span class="apple-converted-space">&nbsp;</span></span><a href="http://cs457.cs.ua.edu/2014S/A.txt"><span class="style5">A</span></a><span style="color:black" class="style5">&nbsp;&nbsp;&nbsp;<span class="apple-converted-space">&nbsp;</span></span><a href="http://cs457.cs.ua.edu/2014S/B.txt"><span class="style5">B</span></a><span style="color:black" class="style5">&nbsp;&nbsp;&nbsp;&nbsp;<span class="apple-converted-space">&nbsp;</span></span><a href="http://cs457.cs.ua.edu/2014S/C.txt"><span class="style5">C</span></a><span style="font-size:13.5pt;color:black"><o:p></o:p></span><o:p></o:p></p>
+<p>
+<o:p></o:p>
+<span style="color:black" class="style5"><strong>NOTE:&nbsp; </strong>You can 
+make whatever changes your program needs to these files to process the data - 
+you are writing the DBMS, so do what you want to the data.</span><span style="font-size:13.5pt;color:black"><o:p></o:p></span><o:p></o:p></p>
+<p>However, f<span style="font-size:13.5pt;color:black"><o:p>or each row in a 
+table, you need to add a variable called Writetime. Writetime is used by 
+Cassandra to indicate when a row was created to keep track of versions, etc.&nbsp; 
+Writetime can be a counter or an actual time value. Assume each row in the 
+database has a different Writetime.</o:p></span></p>
+<p>
+<o:p></o:p>
+<strong><span class="style5">Task 2: </span></strong><span class="style5">Write 
+code to process a select query.</span></p>
+<p>
+<span class="style5">You 
+will need to parse a query to determine what columns are needed, which table, 
+which conditions, etc.</span><o:p></o:p><o:p></o:p></p>
+<p><span style="color:black" class="style5"><strong>Query:</strong>&nbsp; 
+You will prompt the user to input a CQL query.<span style="mso-spacerun:yes">&nbsp;
+</span>The CQL query will be similar to CQL (Cassandra's query language) and 
+have the format:<br>
+&nbsp;&nbsp;&nbsp; a)&nbsp; the SELECT clause can contain a list of column names 
+or * (Note:&nbsp; if * is used, include Writetime is included)<br>
+&nbsp;&nbsp;&nbsp; b)&nbsp; the FROM clause specifies a table<br>
+&nbsp;&nbsp;&nbsp; c)&nbsp; the optional WHERE clause can contain select conditions 
+including the comparison operators o<span class="style1">f &lt;, &gt;, &lt;=, &gt;=, =, &lt;</span><span class="apple-converted-space"><span class="style1">&gt;
+</span>and optionally <strong>one</strong> of either &quot;and&quot; or &quot;or.&quot;&nbsp; There 
+will be no parenthesis.<br>
+</span><br>
+The statement will always 
+be a query, i.e. no updates, no deletes, etc. </span><span class="style5">The query can span more than one line and will end with a ;</span><o:p></o:p></p>
+<p class="style8">A Sample Query:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SELECT C1, C3, C2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FROM C<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WHERE C1&gt;120 and C4&lt;=20;</p>
+<p class="style5">Your program should print the result from the query as a table 
+with column names and rows of data.&nbsp; It should also print the specified 
+columns in the same order as listed in the SELECT clause.</p>
+<p class="style5"><span class="style5">
+<strong>Task 3: </strong>Implement a Join and allow the user to input a CQL 
+query containing the join operator.</span></p>
+<p class="style5">Joins can now be done in Apache Cassandra (by using Apache 
+Spark's SparkSQL).</p>
+<p class="style5">Assume a join has the following format:</p>
+<p class="style16">SELECT columns<br>
+FROM table JOIN table ON join_condition<br>
+WHERE select_condition(s);</p>
+<p class="style5">For Example:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SELECT A1, C2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FROM A JOIN C ON A1=C4<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WHERE C1=145;</p>
+<p class="style9">The from clause may contain up to 2 join operations and the 
+joins should be processed from left to right:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SELECT A2, B2, C2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FROM B JOIN C ON B3=C2 JOIN A ON 
+A1=C4<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WHERE C2=107;</p>
+<p class="style5"><span class="style1">&nbsp;Use the same assumptions for the WHERE 
+clause as described above. </span> </p>
+<p class="style5"><strong>NOTE:&nbsp; You should always use the files 
+A.txt, B.txt and C.txt as the files containing data for your database.&nbsp; </strong> </p>
+<p class="style5"><strong>Input:</strong>&nbsp; You will prompt the user to input an SQL query&nbsp; <br>
+&nbsp;<br>
+There will be <strong>no other</strong> clauses in the query, 
+i.e. no group by, no having, and it will be a single block query, meaning no nested subselects 
+and no predicates.&nbsp; 
+There will be no outerjoins.&nbsp;The 
+statement will always be a query, i.e. no updates, no deletes, etc.<br>
+Assume only the equality comparator will be used in join conditions (equ-join 
+only).&nbsp; An * will NOT be used when a join operation is specified.</p>
+<p class="style9"><strong>Output:</strong>&nbsp; 
+You will need to display the results from your query in<span class="apple-converted-space">&nbsp;</span>table 
+format with column names and each row on a separate line. </p>
+<p class="style9"><span style="color:black" class="style5"><strong>CS557 - do the above plus:</strong></span></p>
+<p class="style9"><span style="font-size:13.5pt;color:black">
+<span class="style5">
+<span style="background-position: 0% 0%; background-image: none; background-repeat: repeat; background-attachment: scroll;" class="style1">
+The SELECT clause may contain an aggregate function: AVG, MIN, MAX, COUNT and 
+will be of the form:</span><span class="style15"><span style="background: white"><span class="style1"><br>
+</span></span></span>
+<span style="background-position: 0% 0%; background-image: none; background-repeat: repeat; background-attachment: scroll;" class="style1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+aggregate(col_name).</span></span></span><span style="color:black"><span style="background: yellow" class="style5"><span class="style15"><span class="style1"><br>
+</span></span>
+</span></span>
+<o:p><span class="style8">&nbsp;The SELECT clause may contain an optional group by 
+clause.&nbsp; If there is a group by, then the column (only one) for the 
+grouping will appear in the SELECT clause.&nbsp; If there is no group by then 
+only an aggregate function will appear in the SELECT.&nbsp; There will be only 
+one aggregate function specified.</span></o:p></p>
+<p class="style17"><span class="style5">SELECT C4, MAX(C2)<br>
+FROM C<br>
+WHERE C1=94<br>
+GROUP BY C4;</span><br>
+</p>
+<p class="style5">You will email your program to vrbsky@cs.ua.edu <strong>May 2 
+by </strong>7 <strong>am</strong>. 
+No late submissions will be 
+accepted.</p>
+<p class="style3"><o:p>&nbsp;</o:p></p>
+<p class="style3">&nbsp;</p>
+</body>
+</html>
