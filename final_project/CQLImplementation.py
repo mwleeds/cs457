@@ -52,7 +52,7 @@ class CQLImplementation(object):
         where_clause = tokens.group('where_clause')
         if where_clause:
             where_re = r'(?P<col1>.+?)(?P<op1><|>|<=|>=|=|<>)(?P<val1>\d+?)' + \
-                       r'((?P<binop>and|or)' + \
+                       r'(\s+(?P<binop>AND|OR)\s+' + \
                        r'(?P<col2>.+?)(?P<op2><|>|<=|>=|=|<>)(?P<val2>\d+?))?$'
             where_tokens = re.match(where_re, where_clause)
             if where_tokens == None:
@@ -60,35 +60,34 @@ class CQLImplementation(object):
             col1, op1, val1 = where_tokens.group('col1'), where_tokens.group('op1'), where_tokens.group('val1')
             col2, op2, val2 = where_tokens.group('col2'), where_tokens.group('op2'), where_tokens.group('val2')
             binop = where_tokens.group('binop')
-            for name in ('col1','op1','val1','col2','op2','val2'): print(name + ': ' + str(where_tokens.group(name)))
         table_columns = self.tables[tables]['columns']
-        print('table_columns: ' + str(table_columns))
         if cols == '*': cols = table_columns
         else: cols = cols.replace(' ', '').split(',')
-        print('cols: ' + str(cols))
         t = PrettyTable(cols)
+        rows_returned = 0
         # execute query
         for row in self.tables[tables]['rows']:
-            print('row: ' + str(row))
+            #TODO implement JOIN
             include = True
             if where_clause:
                 first_condition = self.compare(row[table_columns.index(col1)], op1, int(val1))
                 if binop:
                     second_condition = self.compare(row[table_columns.index(col2)], op2, int(val2))
-                    if binop == 'and': include = (first_condition and second_condition)
+                    if binop == 'AND': include = (first_condition and second_condition)
                     else: include = (first_condition or second_condition)
                 else:
                     include = first_condition
             if include:
                 result_row = [row[table_columns.index(col)] for col in cols]
                 t.add_row(result_row)
+                rows_returned += 1
         print(t)
+        print('(' + str(rows_returned) + ' rows returned by query)')
 
 if __name__=='__main__':
     cql = CQLImplementation()
-    #cql.print_db()
-    query = input('Enter a CQL SELECT query or q to exit: ')
+    query = input('Enter a CQL SELECT query or q to quit: ')
     while query != 'q':
         cql.execute(query.upper())
-        query = input('Enter a CQL SELECT query or q to exit: ')
+        query = input('Enter a CQL SELECT query or q to quit: ')
 
