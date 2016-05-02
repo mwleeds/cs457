@@ -127,6 +127,8 @@ if __name__=='__main__':
     cql = CQLImplementation()
     query = input('Enter a CQL SELECT query or q to quit: ')
     while query != 'q':
+        while query[-1] != ';':
+            query += ' ' + input()
         cql.execute(query.upper())
         query = input('Enter a CQL SELECT query or q to quit: ')
 
